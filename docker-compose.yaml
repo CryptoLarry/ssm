@@ -1,0 +1,70 @@
+version: "3.7"
+services:
+  # Apache via Traefik: http://localhost/
+  # Apache directly: http://localhost:8080
+  ssm:
+    build: "."
+    container_name: ssm
+    depends_on:
+      - postgres
+      - traefik
+    networks:
+      - frontend
+      - backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_DATABASE=ssm
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=password
+    labels:
+      - "traefik.backend=ssm"
+      - "traefik.domain=localhost"
+      - "traefik.frontend.rule=PathPrefix:/"
+      - "traefik.docker.network=ssm_frontend"
+      - "traefik.port=8080"
+      - "traefik.enable=true"
+      - "traefik.frontend.headers.browserXSSFilter=true"
+      - "traefik.frontend.headers.contentTypeNosniff=true"
+      - "traefik.frontend.headers.frameDeny=false"
+  postgres:
+    image: postgres:9.6
+    networks:
+      - backend
+    environment:
+      - POSTGRES_DB=ssm
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - type: bind
+        source: ./.db/pgdata
+        target: /var/lib/postgres/data/pgdata
+      - type: bind
+        source: ./.db/initdb.d/
+        target: /docker-entrypoint-initdb.d/
+    labels:
+      - "traefik.enable=false"
+  # Traefik
+  # traefik dashboard: http://localhost:8181
+  traefik:
+    image: traefik:1.7-alpine
+    container_name: traefik
+    command: --api --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/traefik.toml:/traefik.toml
+    networks:
+      - frontend
+    ports:
+      - 80:80
+      - 443:443
+      - 8081:8080
+    restart: always
+    labels:
+      - "traefik.enable=false"
+
+networks:
+  frontend:
+  backend:
