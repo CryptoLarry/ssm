@@ -1,7 +1,7 @@
 package main
 
 import (
-	"git.coinninja.net/ssm/cmd"
+	"github.com/CryptoLarry/ssm/cmd"
 )
 
 func main() {

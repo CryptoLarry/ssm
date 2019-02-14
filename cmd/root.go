@@ -7,7 +7,7 @@ import (
 
 	_ "net/http/pprof" // Import for pprof
 
-	"git.coinninja.net/ssm/conf"
+	"github.com/CryptoLarry/ssm/conf"
 	cli "github.com/spf13/cobra"
 	config "github.com/spf13/viper"
 	"go.uber.org/zap"
